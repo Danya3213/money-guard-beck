@@ -14,7 +14,6 @@ import { TransactionsModule } from './transactions/transactions.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const uri = configService.get<string>('MONGODB_URL');
-        console.log('Successfully connected to MongoDB');
         return { uri };
       },
       inject: [ConfigService],

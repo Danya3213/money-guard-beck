@@ -1,4 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Transaction } from './schemas/transaction.schema';
@@ -7,12 +14,19 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { JwtService } from '@nestjs/jwt';
 import { IDecodedUser } from '../auth/interfaces/user.interface';
 import { ECategories } from './enums/categories.enum';
+import { TransactionsGateway } from './transactions.gateway';
 
 @Injectable()
 export class TransactionsService {
 
-  constructor(@InjectModel("transaction") private transactionsModel: Model<Transaction>, private readonly jwtService: JwtService) {
-  }
+  // constructor(@InjectModel("transaction") private readonly transactionsModel: Model<Transaction>, private readonly jwtService: JwtService, private readonly transactionsGateway: TransactionsGateway) {
+  // }
+  constructor(
+    @Inject(forwardRef(() => TransactionsGateway))
+    private readonly transactionsGateway: TransactionsGateway,
+    @InjectModel("transaction") private readonly transactionsModel: Model<Transaction>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   jwtDecode(token: string): IDecodedUser {
     return this.jwtService.decode(token)
@@ -27,7 +41,7 @@ export class TransactionsService {
 
       const {userId, ...data} = t;
       return data;
-    });
+    })
   }
 
   async create(dto: CreateTransactionDto, token: string): Promise<ICreatedTransaction> {
@@ -41,7 +55,13 @@ export class TransactionsService {
       userId: user._id,
     });
 
-    return await transaction.save();
+    const newTransaction = await transaction.save();
+
+    if (!newTransaction) throw new NotFoundException("Transaction wasn't created, please try again later");
+
+    await this.transactionsGateway.updateTransactions();
+
+    return newTransaction;
   }
 
   async delete(transactionId: unknown, token:string) {
@@ -50,6 +70,8 @@ export class TransactionsService {
     const transaction = await this.transactionsModel.findOneAndDelete({userId: user._id, _id: transactionId});
 
     if (!transaction) throw new NotFoundException("Transaction does not exist or you haven't permission to delete it");
+
+    await this.transactionsGateway.updateTransactions();
 
     return transaction;
   }
@@ -73,6 +95,7 @@ export class TransactionsService {
 
     if (!transaction) throw new NotFoundException("Transaction does not exist or you haven't permission to change it");
 
+    await this.transactionsGateway.updateTransactions();
     return transaction;
   }
 

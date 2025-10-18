@@ -5,10 +5,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TransactionSchema } from './schemas/transaction.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TransactionsGateway } from './transactions.gateway';
 
 @Module({
   controllers: [TransactionsController],
-  providers: [TransactionsService],
+  providers: [TransactionsService, TransactionsGateway],
   imports: [
     MongooseModule.forFeature([{ name: 'transaction', schema: TransactionSchema }]),
     JwtModule.registerAsync({

@@ -14,6 +14,7 @@ export interface IReturnedUser {
   username: string;
   email: string;
   password: string;
+  isConfirmed: boolean;
   token: string;
 }
 

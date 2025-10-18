@@ -9,11 +9,6 @@ import {Request} from 'express';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @Get('all')
-  @UseGuards(isValidTokenGuard)
-  async getAll(@Req() req: Request): Promise<Omit<ICreatedTransaction, "userId">[]> {
-    return this.transactionsService.getAll(req.cookies?.token);
-  }
   @Post('add')
   @UseGuards(isValidTokenGuard)
   async create(@Req() req: Request, @Body() dto: CreateTransactionDto): Promise<ICreatedTransaction> {

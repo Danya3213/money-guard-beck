@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { Document, Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { CheckUserDto } from './dto/check-user.dto';
-import { JwtService, JsonWebTokenError } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -60,6 +60,7 @@ export class AuthService {
       username,
       email,
       password: dto.password,
+      isConfirmed: false,
       token,
     };
   };
@@ -74,10 +75,11 @@ export class AuthService {
 
     if (!foundedUser || !checkPassword) throw new NotFoundException('Incorrect email or password');
 
-    const { username, email, password, _id}: {
+    const { username, email, password, isConfirmed, _id}: {
       username: string;
       email: string;
       password: string;
+      isConfirmed: boolean;
       _id: unknown;
     } = foundedUser;
 
@@ -87,6 +89,7 @@ export class AuthService {
       username,
       email,
       password: dto.password,
+      isConfirmed,
       token,
     };
   };
