@@ -16,7 +16,7 @@ export class TransactionsController {
   }
   @Patch('change/:id')
   @UseGuards(isValidTokenGuard)
-  async change(@Param('id') transactionId: string, @Body() dto: Partial<CreateTransactionDto>, @Req() req: Request) {
+  async change(@Param('id') transactionId: string, @Body() dto: CreateTransactionDto, @Req() req: Request) {
     return this.transactionsService.change(transactionId, dto, req.cookies?.token);
   }
   @Delete('del/:id')
